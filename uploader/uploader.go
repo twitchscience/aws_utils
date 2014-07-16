@@ -9,7 +9,7 @@ import (
 
 	"github.com/crowdmob/goamz/s3"
 
-	"git.internal.justin.tv/stats/aws_utils/common"
+	"github.com/TwitchScience/aws_utils/common"
 )
 
 type FileTypeHeader string

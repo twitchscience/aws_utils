@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"git.internal.justin.tv/stats/aws_utils/common"
+	"github.com/TwitchScience/aws_utils/common"
 	"github.com/crowdmob/goamz/aws"
 	"github.com/crowdmob/goamz/sqs"
 )
