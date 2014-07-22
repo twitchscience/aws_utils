@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/TwitchScience/aws_utils/common"
+	"github.com/twitchscience/aws_utils/common"
 	"github.com/crowdmob/goamz/aws"
 	"github.com/crowdmob/goamz/sqs"
 )

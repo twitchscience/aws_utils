@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/TwitchScience/aws_utils",
+	"ImportPath": "github.com/twitchscience/aws_utils",
 	"GoVersion": "go1.3",
 	"Packages": [
 		"./..."
