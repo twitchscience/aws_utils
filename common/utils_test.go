@@ -6,6 +6,10 @@ import (
 )
 
 func TestRetrier(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Takes 14 seconds, so don't run during short mode")
+	}
+
 	retrier := &Retrier{
 		Times:         3,
 		BackoffFactor: 2,
