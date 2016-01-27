@@ -1,21 +1,21 @@
 {
 	"ImportPath": "github.com/twitchscience/aws_utils",
-	"GoVersion": "go1.3",
+	"GoVersion": "go1.5",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/crowdmob/goamz/aws",
-			"Rev": "c5ba9ad45b6ac022326f0ff9762d6bac33ca8f88"
+			"ImportPath": "github.com/AdRoll/goamz/aws",
+			"Rev": "11956709b6bdd5cea74551d3d6ab080b996f1a2d"
 		},
 		{
-			"ImportPath": "github.com/crowdmob/goamz/s3",
-			"Rev": "c5ba9ad45b6ac022326f0ff9762d6bac33ca8f88"
+			"ImportPath": "github.com/AdRoll/goamz/s3",
+			"Rev": "11956709b6bdd5cea74551d3d6ab080b996f1a2d"
 		},
 		{
-			"ImportPath": "github.com/crowdmob/goamz/sqs",
-			"Rev": "c5ba9ad45b6ac022326f0ff9762d6bac33ca8f88"
+			"ImportPath": "github.com/AdRoll/goamz/sqs",
+			"Rev": "11956709b6bdd5cea74551d3d6ab080b996f1a2d"
 		}
 	]
 }

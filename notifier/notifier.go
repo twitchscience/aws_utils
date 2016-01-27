@@ -10,9 +10,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/AdRoll/goamz/aws"
+	"github.com/AdRoll/goamz/sqs"
 	"github.com/twitchscience/aws_utils/common"
-	"github.com/crowdmob/goamz/aws"
-	"github.com/crowdmob/goamz/sqs"
 )
 
 func TimeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
