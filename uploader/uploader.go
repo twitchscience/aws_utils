@@ -1,14 +1,10 @@
 package uploader
 
 import (
-	"fmt"
-	"net"
-	"net/http"
 	"os"
-	"time"
 
-	"github.com/AdRoll/goamz/s3"
-
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/twitchscience/aws_utils/common"
 )
 
@@ -19,57 +15,28 @@ const (
 	Text FileTypeHeader = "text/plain"
 )
 
-func TimeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
-	return func(netw, addr string) (net.Conn, error) {
-		conn, err := net.DialTimeout(netw, addr, cTimeout)
-		if err != nil {
-			return nil, err
-		}
-		conn.SetDeadline(time.Now().Add(rwTimeout))
-		return conn, nil
-	}
-}
-
-func NewTimeoutClient(connectTimeout time.Duration, readWriteTimeout time.Duration) *http.Client {
-	http.DefaultClient.Transport = &http.Transport{
-		Dial: TimeoutDialer(connectTimeout, readWriteTimeout),
-	}
-	return http.DefaultClient
-}
-
 type Uploader interface {
-	GetKeyName(string) string
 	Upload(*UploadRequest) (*UploadReceipt, error)
-	TargetLocation() string
 }
 
 type S3UploaderBuilder struct {
-	Bucket           *s3.Bucket
+	Bucket           string
 	KeyNameGenerator S3KeyNameGenerator
+	S3Manager        *s3manager.Uploader
 }
 
 type S3Uploader struct {
-	Bucket           *s3.Bucket
+	Bucket           string
 	KeyNameGenerator S3KeyNameGenerator
+	S3Manager        *s3manager.Uploader
 }
 
 func (builder *S3UploaderBuilder) BuildUploader() Uploader {
 	return &S3Uploader{
 		Bucket:           builder.Bucket,
 		KeyNameGenerator: builder.KeyNameGenerator,
+		S3Manager:        builder.S3Manager,
 	}
-}
-
-func (worker *S3Uploader) prependBucketName(path string) string {
-	return fmt.Sprintf("%s/%s", worker.Bucket.Name, path)
-}
-
-func (worker *S3Uploader) TargetLocation() string {
-	return worker.Bucket.Name
-}
-
-func (worker *S3Uploader) GetKeyName(filename string) string {
-	return worker.KeyNameGenerator.GetKeyName(filename)
 }
 
 var retrier = &common.Retrier{
@@ -82,33 +49,31 @@ func (worker *S3Uploader) Upload(req *UploadRequest) (*UploadReceipt, error) {
 	if err != nil {
 		return nil, err
 	}
-	info, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
 	// This means that if we fail to talk to s3 we still remove the file.
 	// I think that this is the correct behavior as we dont want to cause
 	// a HD overflow in case of a http timeout.
 	defer os.Remove(req.Filename)
-	keyName := worker.GetKeyName(req.Filename)
+	keyName := worker.KeyNameGenerator.GetKeyName(req.Filename)
 
 	err = retrier.Retry(func() error {
 		// We need to seek to ensure that the retries read from the start of the file
 		file.Seek(0, 0)
-		return worker.Bucket.PutReader(
-			keyName,
-			file,
-			info.Size(),
-			string(req.FileType),
-			"bucket-owner-full-control",
-			s3.Options{},
-		)
+
+		_, e := worker.S3Manager.Upload(&s3manager.UploadInput{
+			Bucket:      aws.String(worker.Bucket),
+			Key:         aws.String(keyName),
+			ACL:         aws.String("bucket-owner-full-control"),
+			ContentType: aws.String(string(req.FileType)),
+			Body:        file,
+		})
+
+		return e
 	})
 	if err != nil {
 		return nil, err
 	}
 	return &UploadReceipt{
 		Path:    req.Filename,
-		KeyName: worker.prependBucketName(keyName),
+		KeyName: worker.Bucket + "/" + keyName,
 	}, nil
 }
