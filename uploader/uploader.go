@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager/s3manageriface"
 	"github.com/twitchscience/aws_utils/common"
 )
 
@@ -15,27 +16,41 @@ const (
 	Text FileTypeHeader = "text/plain"
 )
 
+// Factory is an interface to an object that makes new Uploader instances
+type Factory interface {
+	NewUploader() Uploader
+}
+
+// Uploader is an interface for uploading files
 type Uploader interface {
 	Upload(*UploadRequest) (*UploadReceipt, error)
 }
 
-type S3UploaderBuilder struct {
-	Bucket           string
-	KeyNameGenerator S3KeyNameGenerator
-	S3Manager        *s3manager.Uploader
+type factory struct {
+	bucket           string
+	keynameGenerator S3KeyNameGenerator
+	s3Uploader       s3manageriface.UploaderAPI
 }
 
-type S3Uploader struct {
-	Bucket           string
-	KeyNameGenerator S3KeyNameGenerator
-	S3Manager        *s3manager.Uploader
+type uploader struct {
+	bucket           string
+	keynameGenerator S3KeyNameGenerator
+	s3Uploader       s3manageriface.UploaderAPI
 }
 
-func (builder *S3UploaderBuilder) BuildUploader() Uploader {
-	return &S3Uploader{
-		Bucket:           builder.Bucket,
-		KeyNameGenerator: builder.KeyNameGenerator,
-		S3Manager:        builder.S3Manager,
+func NewFactory(bucket string, keynameGenerator S3KeyNameGenerator, s3Uploader s3manageriface.UploaderAPI) Factory {
+	return &factory{
+		bucket:           bucket,
+		keynameGenerator: keynameGenerator,
+		s3Uploader:       s3Uploader,
+	}
+}
+
+func (f *factory) NewUploader() Uploader {
+	return &uploader{
+		bucket:           f.bucket,
+		keynameGenerator: f.keynameGenerator,
+		s3Uploader:       f.s3Uploader,
 	}
 }
 
@@ -44,7 +59,7 @@ var retrier = &common.Retrier{
 	BackoffFactor: 2,
 }
 
-func (worker *S3Uploader) Upload(req *UploadRequest) (*UploadReceipt, error) {
+func (worker *uploader) Upload(req *UploadRequest) (*UploadReceipt, error) {
 	file, err := os.Open(req.Filename)
 	if err != nil {
 		return nil, err
@@ -53,14 +68,14 @@ func (worker *S3Uploader) Upload(req *UploadRequest) (*UploadReceipt, error) {
 	// I think that this is the correct behavior as we dont want to cause
 	// a HD overflow in case of a http timeout.
 	defer os.Remove(req.Filename)
-	keyName := worker.KeyNameGenerator.GetKeyName(req.Filename)
+	keyName := worker.keynameGenerator.GetKeyName(req.Filename)
 
 	err = retrier.Retry(func() error {
 		// We need to seek to ensure that the retries read from the start of the file
 		file.Seek(0, 0)
 
-		_, e := worker.S3Manager.Upload(&s3manager.UploadInput{
-			Bucket:      aws.String(worker.Bucket),
+		_, e := worker.s3Uploader.Upload(&s3manager.UploadInput{
+			Bucket:      aws.String(worker.bucket),
 			Key:         aws.String(keyName),
 			ACL:         aws.String("bucket-owner-full-control"),
 			ContentType: aws.String(string(req.FileType)),
@@ -74,6 +89,6 @@ func (worker *S3Uploader) Upload(req *UploadRequest) (*UploadReceipt, error) {
 	}
 	return &UploadReceipt{
 		Path:    req.Filename,
-		KeyName: worker.Bucket + "/" + keyName,
+		KeyName: worker.bucket + "/" + keyName,
 	}, nil
 }

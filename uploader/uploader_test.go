@@ -79,12 +79,7 @@ func TestUploader(t *testing.T) {
 	}
 
 	kng := &simpleNameGenerator{prefix: "aws_utils_test"}
-
-	uploaderBuilder := &S3UploaderBuilder{
-		Bucket:           *testBucket,
-		KeyNameGenerator: kng,
-		S3Manager:        s3manager.NewUploader(awsSession),
-	}
+	factory := NewFactory(*testBucket, kng, s3manager.NewUploader(awsSession))
 
 	s3client := s3.New(awsSession)
 
@@ -106,7 +101,7 @@ func TestUploader(t *testing.T) {
 				}
 			}()
 
-			u := uploaderBuilder.BuildUploader()
+			u := factory.NewUploader()
 			_, err = u.Upload(&UploadRequest{
 				Filename: fn,
 				FileType: Text,
