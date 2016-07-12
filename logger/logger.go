@@ -47,11 +47,10 @@ func Init(level string) {
 
 // getEnv returns the given environment variable or the default if it is undefined.
 func getEnv(name, deflt string) string {
-	val, ok := os.LookupEnv(name)
-	if !ok {
-		return deflt
+	if val, ok := os.LookupEnv(name); ok {
+		return val
 	}
-	return val
+	return deflt
 }
 
 // addContext adds the caller and context map to the log data map.
@@ -65,14 +64,11 @@ func addContext(data map[string]interface{}, depth int) {
 }
 
 // caller gives the filename/line at the given depth.
-func caller(depth int) (str string) {
-	_, file, line, ok := runtime.Caller(depth)
-	if !ok {
-		str = "???:0"
-	} else {
-		str = fmt.Sprint(filepath.Base(file), ":", line)
+func caller(depth int) string {
+	if _, file, line, ok := runtime.Caller(depth); ok {
+		return fmt.Sprint(filepath.Base(file), ":", line)
 	}
-	return
+	return "???:0"
 }
 
 // newEntry creates a new logrus.Entry with context added to it.
