@@ -2,11 +2,11 @@
 logger is a library for writing structured json logs to stderr.
 
 It is a wrapper around [logrus](https://github.com/Sirupsen/logrus) that
-automatically formats as JSON, provides some default context
-(env, pid, host, and caller), and can capture output written to the default logger
-(since external dependencies will not be using this logger). It also has the
-option to add a rollbar [hook](https://github.com/Sirupsen/logrus#hooks) to send
-all errors/panics/fatals to rollbar.
+automatically formats as JSON and provides some default context
+(env, pid, host, and caller). It  can capture output written to the default logger
+(since external dependencies will not be using this logger), and can add a rollbar 
+rollbar [hook](https://github.com/Sirupsen/logrus#hooks) to send all 
+errors/panics/fatals to rollbar.
 
 ## Usage
 To use logger, just import this library, then call `logger.Init(<level>)`
