@@ -29,6 +29,34 @@ To capture and log panics in other goroutines, spawn them with
 ```
 logger.Go( <func> )
 ```
+When using logger.Go, be careful about variables in loops. Unlike normal
+goroutines, you can't pass arguments (including objects with methods called on them).
+As an example, to convert:
+```
+for i, o := range objects {
+    go o.worker(i)
+}
+```
+you will need to do one of the two following:
+```
+// Turn the loop variables into local function variables.
+for i, o := range objects {
+    logger.Go(func(o Obj, i int) func() {
+        return func() { o.worker(i) }
+    }(o, i))
+}
+```
+or
+```
+// Alias the loop variables in the block scope.
+for i, o := range objects {
+    i := i
+    o := o
+    logger.Go(func() { o.worker(i) })
+}
+```
+If you don't do one of the above, `i` and `o` will be shared across all goroutine invocations,
+which means that they will probably be the value of the last iteration of the loop.
 
 And in your shutdown code, include `logger.Wait()` to wait for any remaining
 logs to be sent to rollbar before exiting.
