@@ -1,10 +1,9 @@
+/*
+Package listener provides an SQS listener which calls a function on each message.
+After the handler is complete, listener deletes the message.
+*/
 package listener
 
-// Listens to a sqs queue for messages.
-// Similar to Http server listener uses a handler that forks on accept.
-// Once handler is complete listener should delete the message.
-
-// TODO make seperate sqs wrapper for queues
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"

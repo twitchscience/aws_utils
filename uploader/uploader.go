@@ -1,3 +1,7 @@
+/*
+Package uploader provides Uploader and UploaderPool, which move files to S3
+and fire a notification for each.
+*/
 package uploader
 
 import (

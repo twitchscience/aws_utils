@@ -1,3 +1,6 @@
+/*
+Package notifier provides clients for sending messages to SNS and SQS.
+*/
 package notifier
 
 import (

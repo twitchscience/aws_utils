@@ -1,3 +1,6 @@
+/*
+Package mocks provides SQS interface mocks for testing.
+*/
 package mocks
 
 import (
