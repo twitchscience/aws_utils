@@ -37,6 +37,7 @@ func Init(level string) {
 	}
 	context["env"] = getEnv("CLOUD_ENVIRONMENT", "local")
 	context["pid"] = strconv.Itoa(os.Getpid())
+	var err error
 	context["host"], err = os.Hostname()
 	if err != nil {
 		context["host"] = getEnv("HOST", "localhost")
