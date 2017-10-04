@@ -68,7 +68,7 @@ func TestSqs(t *testing.T) {
 	})
 
 	h := &handler{}
-	l := listener.BuildSQSListener(h, 1*time.Second, client)
+	l := listener.BuildSQSListener(h, 1*time.Second, client, nil)
 	if l == nil {
 		t.Error("Unable to create SQSListener")
 	}
@@ -215,7 +215,7 @@ func TestSns(t *testing.T) {
 	})
 
 	h := &handler{}
-	l := listener.BuildSQSListener(h, 1*time.Second, sqsClient)
+	l := listener.BuildSQSListener(h, 1*time.Second, sqsClient, nil)
 	if l == nil {
 		t.Error("Unable to create SQSListener")
 	}
