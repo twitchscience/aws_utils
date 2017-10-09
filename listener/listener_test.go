@@ -79,7 +79,7 @@ func TestSQSListenerHandlingDedupHandleFailure(t *testing.T) {
 			listener.handle(&sqs.Message{Body: &s, ReceiptHandle: &s}, nil)
 		}
 	}
-	if handler.Called != uniq {
+	if handler.Called != runs*uniq {
 		t.Errorf("expected %d but got %d", runs*uniq, handler.Called)
 	}
 }

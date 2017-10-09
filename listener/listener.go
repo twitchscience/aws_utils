@@ -81,6 +81,7 @@ func (l *SQSListener) handle(msg *sqs.Message, qURL *string) {
 		err = l.Handler.Handle(msg)
 		if err != nil {
 			fmt.Printf("SQS Handler returned error: %s\n", err)
+			l.filter.Failed(msg)
 
 			_, err = l.sqsClient.ChangeMessageVisibility(&sqs.ChangeMessageVisibilityInput{
 				QueueUrl:          qURL,
